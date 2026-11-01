@@ -248,3 +248,19 @@ func TestCleanupHeadlessBrowserCacheRemovesUnusedAssets(t *testing.T) {
 		t.Fatalf("headless shell should be preserved: %v", err)
 	}
 }
+
+func TestHasHeadlessBrowserOnlyMatchesShellCache(t *testing.T) {
+	browserDirectory := t.TempDir()
+	if err := os.Mkdir(filepath.Join(browserDirectory, "chromium-1228"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if hasHeadlessBrowser(browserDirectory) {
+		t.Fatal("full Chromium should not satisfy headless shell detection")
+	}
+	if err := os.Mkdir(filepath.Join(browserDirectory, "chromium_headless_shell-1228"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if !hasHeadlessBrowser(browserDirectory) {
+		t.Fatal("expected installed headless shell to be detected")
+	}
+}

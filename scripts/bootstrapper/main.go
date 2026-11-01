@@ -51,7 +51,6 @@ func main() {
 	}
 
 	printBanner()
-	fmt.Println("Installing dependencies...")
 	if err := run(); err != nil {
 		if errors.Is(err, errInterrupted) {
 			return
@@ -93,6 +92,17 @@ func run() error {
 		return err
 	}
 
+	dependencyID, err := embedded.ReadFile("payload/dependency-id")
+	if err != nil {
+		return fmt.Errorf("embedded dependency ID is missing: %w", err)
+	}
+	browserDirectory := filepath.Join(runtimeDirectory, "browsers")
+	if !hasUsableNodeRuntime(runtimeDirectory) ||
+		!dependenciesReady(appDirectory, strings.TrimSpace(string(dependencyID))) ||
+		!hasHeadlessBrowser(browserDirectory) {
+		fmt.Println("Installing dependencies...")
+	}
+
 	runtimeInfo, err := findNodeRuntime(runtimeDirectory)
 	if err != nil {
 		return err
@@ -127,10 +137,6 @@ func run() error {
 		)
 	}
 
-	dependencyID, err := embedded.ReadFile("payload/dependency-id")
-	if err != nil {
-		return fmt.Errorf("embedded dependency ID is missing: %w", err)
-	}
 	if !dependenciesReady(appDirectory, strings.TrimSpace(string(dependencyID))) {
 		if err := withEmbeddedPackage(appDirectory, true, func() error {
 			return runNpm(runtimeInfo, appDirectory, environment, "ci", "--omit=dev")
@@ -374,6 +380,25 @@ func fsCopyEmbedded(source, destination string) error {
 }
 
 func findNodeRuntime(runtimeRoot string) (nodeRuntime, error) {
+	if systemRuntime, found := findSystemNodeRuntime(); found {
+		return systemRuntime, nil
+	}
+	if cachedRuntime, found := findCachedNodeRuntime(runtimeRoot); found {
+		return cachedRuntime, nil
+	}
+	fmt.Println("[Bootstrapper] Node.js 24+ with npm was not found. Downloading the official Node.js runtime...")
+	return downloadNodeRuntime(runtimeRoot)
+}
+
+func hasUsableNodeRuntime(runtimeRoot string) bool {
+	if _, found := findSystemNodeRuntime(); found {
+		return true
+	}
+	_, found := findCachedNodeRuntime(runtimeRoot)
+	return found
+}
+
+func findSystemNodeRuntime() (nodeRuntime, bool) {
 	nodeName := "node"
 	npmName := "npm"
 	if runtime.GOOS == "windows" {
@@ -382,16 +407,10 @@ func findNodeRuntime(runtimeRoot string) (nodeRuntime, error) {
 	}
 	if nodePath, err := exec.LookPath(nodeName); err == nil && nodeMajorVersion(nodePath) >= 24 {
 		if npmPath, npmErr := exec.LookPath(npmName); npmErr == nil {
-			return nodeRuntime{Path: nodePath, NpmPath: npmPath, SearchPath: filepath.Dir(nodePath)}, nil
+			return nodeRuntime{Path: nodePath, NpmPath: npmPath, SearchPath: filepath.Dir(nodePath)}, true
 		}
 	}
-	if cachedRuntime, found := findCachedNodeRuntime(runtimeRoot); found {
-		fmt.Println("[Bootstrapper] Reusing the Node.js runtime from workspace/.runtime.")
-		return cachedRuntime, nil
-	}
-
-	fmt.Println("[Bootstrapper] Node.js 24+ with npm was not found. Downloading the official Node.js runtime...")
-	return downloadNodeRuntime(runtimeRoot)
+	return nodeRuntime{}, false
 }
 
 func findCachedNodeRuntime(runtimeRoot string) (nodeRuntime, bool) {
@@ -803,6 +822,19 @@ func cleanupHeadlessBrowserCache(browserDirectory string) error {
 		}
 	}
 	return nil
+}
+
+func hasHeadlessBrowser(browserDirectory string) bool {
+	entries, err := os.ReadDir(browserDirectory)
+	if err != nil {
+		return false
+	}
+	for _, entry := range entries {
+		if entry.IsDir() && strings.HasPrefix(entry.Name(), "chromium_headless_shell-") {
+			return true
+		}
+	}
+	return false
 }
 
 func hasArgument(expected string) bool {
