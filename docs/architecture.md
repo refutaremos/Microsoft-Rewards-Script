@@ -40,7 +40,7 @@ Ctrl+C and SIGTERM initiate cleanup. The bot flushes notification queues and clo
 | `scripts/main/`                | Manual login and session commands                        |
 | `scripts/api/`                 | HTTP API, process execution, and scheduling              |
 
-To add an application preference, update `src/constants/appConfig.json`, its type in `src/interface/Config.ts`, and its schema in `src/util/Validator.ts`. User-facing overrides belong in `workspace/config.json`. Account fields belong in `workspace/accounts.txt` and are mapped in `src/util/Load.ts`. Change an activity in its group under `src/functions/activities/`; use `src/functions/Activities.ts` to dispatch it; and `src/index.ts` to adjust when it runs. Search sources belong in `src/functions/QueryEngine.ts`, and RSS feeds in `src/constants/rssFeeds.ts`.
+To add an application preference, update `APP_CONFIG` in `src/constants/runtimeConstants.ts`, its type in `src/interface/Config.ts`, and its schema in `src/util/Validator.ts`. User-facing overrides belong in `workspace/config.json`. Account fields belong in `workspace/accounts.txt` and are mapped in `src/util/Load.ts`. Change an activity in its group under `src/functions/activities/`; use `src/functions/Activities.ts` to dispatch it; and `src/index.ts` to adjust when it runs. Search sources belong in `src/functions/QueryEngine.ts`, and RSS feeds in `src/constants/rssFeeds.ts`.
 
 # Arquitetura
 
@@ -102,7 +102,7 @@ timer. A API também oferece endpoints explícitos para parar e reiniciar.
 | `scripts/main/`                | Login manual e comandos para sessões                    |
 | `scripts/api/`                 | API HTTP, execução de processos e agenda                |
 
-Para adicionar uma preferência, atualize `src/constants/appConfig.json`, o tipo
+Para adicionar uma preferência, atualize `APP_CONFIG` em `src/constants/runtimeConstants.ts`, o tipo
 em `src/interface/Config.ts` e o schema em `src/util/Validator.ts`. Campos de
 conta pertencem a `workspace/accounts.txt` e são mapeados em `src/util/Load.ts`.
 Altere uma atividade no seu grupo em `src/functions/activities/`; use

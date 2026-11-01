@@ -5,7 +5,7 @@ import { randomBytes } from 'node:crypto'
 
 import type { Account } from '../interface/Account'
 import type { Config } from '../interface/Config'
-import appConfig from '../constants/appConfig.json'
+import { APP_CONFIG } from '../constants/runtimeConstants'
 import { validateAccounts, validateConfig } from './Validator'
 import { getDataDirectory, getWorkspaceDirectory, isSeaBuild } from './AppPaths'
 
@@ -89,10 +89,10 @@ function ensureWorkspaceConfig(): string {
         const development = workspaceFileName('config.json').includes('.dev.')
         const examplePath = path.join(workspaceDirectory, 'config.json')
         const seededConfig = development
-            ? appConfig
+            ? APP_CONFIG
             : fs.existsSync(examplePath)
               ? JSON.parse(fs.readFileSync(examplePath, 'utf8'))
-              : appConfig
+              : APP_CONFIG
         fs.writeFileSync(configPath, `${JSON.stringify(seededConfig, null, 4)}\n`, { mode: 0o600 })
         return configPath
     }
@@ -226,13 +226,18 @@ export function loadConfig(): Config {
         }
 
         const userOverrides = isRecord(overrides) ? overrides : {}
-        const mergedConfig = mergeConfig(mergeConfig(appConfig, botOverrides), userOverrides)
+        const mergedConfig = mergeConfig(mergeConfig(APP_CONFIG, botOverrides), userOverrides)
+        if (process.env.MRS_HEADLESS_ONLY === '1' && isRecord(mergedConfig) && mergedConfig.headless === false) {
+            throw new Error(
+                'This bootstrapper includes headless Chromium only. Set "headless": true in workspace/config.json.'
+            )
+        }
         configCache = validateConfig({
             ...(isRecord(mergedConfig) ? mergedConfig : {}),
             diagnosticsPassword: ensureDiagnosticsPassword(),
-            sessionPath: appConfig.sessionPath,
-            headless: appConfig.headless,
-            clusters: appConfig.clusters
+            sessionPath: APP_CONFIG.sessionPath,
+            headless: APP_CONFIG.headless,
+            clusters: APP_CONFIG.clusters
         })
         return configCache
     } catch (error) {

@@ -40,19 +40,29 @@ The wizard creates `workspace/config.json` and `workspace/accounts.txt`. Keep th
 
 ## Commands
 
-| Command                          | Purpose                                    |
-| -------------------------------- | ------------------------------------------ |
-| `npm run build`                  | Compile TypeScript and copy query data     |
-| `npm run start`                  | Run the application                        |
-| `npm run dev`                    | Run TypeScript directly with debug logging |
-| `npm run manual-login -- --help` | Show manual login options                  |
-| `npm run clear-sessions -- help` | Show session management commands           |
-| `npm run open-session -- --help` | Open a saved session in Chromium           |
-| `npm run api -- --help`          | Show control API options                   |
-| `npm test`                       | Run tests                                  |
-| `npm run lint`                   | Run ESLint                                 |
+| Command                          | Purpose                                        |
+| -------------------------------- | ---------------------------------------------- |
+| `npm run build`                  | Compile TypeScript and copy query data         |
+| `npm run build:bootstrapper`     | Build a small one-click launcher (requires Go) |
+| `npm run start`                  | Run the application                            |
+| `npm run dev`                    | Run TypeScript directly with debug logging     |
+| `npm run manual-login -- --help` | Show manual login options                      |
+| `npm run clear-sessions -- help` | Show session management commands               |
+| `npm run open-session -- --help` | Open a saved session in Chromium               |
+| `npm run api -- --help`          | Show control API options                       |
+| `npm test`                       | Run tests                                      |
+| `npm run lint`                   | Run ESLint                                     |
 
 The optional API can start and monitor runs and maintain a local schedule while the API process is running. See the [control API guide](scripts/api/README.md).
+
+For small one-click launchers, run `npm run build:bootstrapper`. It creates the
+host executable and a Windows/amd64 executable under `dist/bootstrapper/`; on
+first launch they use or download Node.js, install production dependencies and
+the Chromium headless shell, and store runtime files under `workspace/.runtime/`.
+The app bundle stays embedded in the executable and runs through the existing
+`npm run start` command. See the
+[bootstrapper guide](docs/node-sea.md) for build targets, Linux package
+permissions, and privacy limitations.
 
 ## Documentation
 
@@ -97,6 +107,7 @@ O wizard cria `workspace/config.json` e `workspace/accounts.txt`. Mantenha esses
 | Comando                          | Finalidade                                            |
 | -------------------------------- | ----------------------------------------------------- |
 | `npm run build`                  | Compilar TypeScript e copiar dados de consulta        |
+| `npm run build:bootstrapper`     | Criar launcher one-click (requer Go)                  |
 | `npm run start`                  | Executar a aplicação                                  |
 | `npm run dev`                    | Executar TypeScript diretamente com logs de depuração |
 | `npm run manual-login -- --help` | Ver opções de login manual                            |
@@ -108,6 +119,14 @@ O wizard cria `workspace/config.json` e `workspace/accounts.txt`. Mantenha esses
 
 A API opcional pode iniciar e monitorar execuções e manter uma agenda local
 enquanto o processo da API estiver ativo. Consulte o [guia da API](scripts/api/README.md).
+
+Para criar um launcher one-click pequeno, execute `npm run build:bootstrapper`.
+Ele gera executáveis para o sistema atual e Windows/amd64 em `dist/bootstrapper/`;
+na primeira execução, eles usam ou baixam Node.js, instalam as dependências de
+produção e o Chromium headless shell em `workspace/.runtime/`. O bundle da
+aplicação fica embutido no executável e roda pelo comando existente `npm run start`.
+Consulte o
+[guia do bootstrapper](docs/node-sea.md) para alvos, permissões no Linux e limites de privacidade.
 
 ## Documentação
 

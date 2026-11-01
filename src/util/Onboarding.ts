@@ -35,7 +35,8 @@ function writePrivateJson(filePath: string, value: unknown): void {
 
 export function runOnboarding(): void {
     const workspaceDirectory = getWorkspaceDirectory()
-    const development = process.env.MRS_ENV === 'development' || process.argv.includes('-dev') || process.argv.includes('--dev')
+    const development =
+        process.env.MRS_ENV === 'development' || process.argv.includes('-dev') || process.argv.includes('--dev')
     const configName = development ? 'config.dev.json' : 'config.json'
     const accountsName = development ? 'accounts.dev.txt' : 'accounts.txt'
     const configPath = path.join(workspaceDirectory, configName)
@@ -64,7 +65,7 @@ export function runOnboardingIfNeeded(): void {
     const hasAccount = /^email:\s*\S+@\S+/m.test(contents)
     if (hasAccount) return
 
-    const setupPath = path.join(process.cwd(), 'scripts', 'setup.js')
+    const setupPath = process.env.MRS_SETUP_PATH ?? path.join(process.cwd(), 'scripts', 'setup.js')
     if (!fs.existsSync(setupPath)) return
     const result = spawnSync(process.execPath, [setupPath], {
         stdio: 'inherit',

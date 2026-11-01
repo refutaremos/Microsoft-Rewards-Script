@@ -25,18 +25,18 @@ Use `npm run setup` to create or append accounts safely. Passwords stay in the l
 
 Keep these options in `config.json`; there are no `CONFIG_*` environment variable overrides.
 
-| Section                                                                | Purpose                                                               |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Application internals                                                   | Storage, browser visibility, concurrency, and timeouts               |
-| `workers`                                                              | Enable or disable individual workflows                                |
-| `activities`                                                           | URL Reward and Explore on Bing activities                             |
-| `searchSettings`                                                       | Query sources, intervals, result interaction, and concurrency         |
-| `experimental`                                                         | Optional API search, media blocking, and Edge browsing                |
-| `proxy`                                                                | Proxy use for queries and TLS handling for trusted inspection proxies |
-| `consoleLogFilter`, `debugLogs`, `errorDiagnostics`                    | Console output and diagnostics                                        |
-| `webhook`                                                              | Discord, ntfy, Telegram, and notification filters                     |
+| Section                                             | Purpose                                                               |
+| --------------------------------------------------- | --------------------------------------------------------------------- |
+| Application internals                               | Storage, browser visibility, concurrency, and timeouts                |
+| `workers`                                           | Enable or disable individual workflows                                |
+| `activities`                                        | URL Reward and Explore on Bing activities                             |
+| `searchSettings`                                    | Query sources, intervals, result interaction, and concurrency         |
+| `experimental`                                      | Optional API search, media blocking, and Edge browsing                |
+| `proxy`                                             | Proxy use for queries and TLS handling for trusted inspection proxies |
+| `consoleLogFilter`, `debugLogs`, `errorDiagnostics` | Console output and diagnostics                                        |
+| `webhook`                                           | Discord, ntfy, Telegram, and notification filters                     |
 
-Durations accept numeric milliseconds or strings such as `30sec` and `1min`. For intervals, `max` must be greater than or equal to `min`. Query sources include `google`, `wikipedia`, `wikirandom`, `hackernews`, `reddit`, and configured RSS feeds. Queries come from these external sources; if none respond, search is skipped rather than using a local fallback list. Internal defaults are in [`src/constants/appConfig.json`](../src/constants/appConfig.json).
+Durations accept numeric milliseconds or strings such as `30sec` and `1min`. For intervals, `max` must be greater than or equal to `min`. Query sources include `google`, `wikipedia`, `wikirandom`, `hackernews`, `reddit`, and configured RSS feeds. Queries come from these external sources; if none respond, search is skipped rather than using a local fallback list. Internal defaults are in [`src/constants/runtimeConstants.ts`](../src/constants/runtimeConstants.ts).
 
 The distributed example sets `headless` to `false`. Use headless mode on servers without a graphical environment.
 
@@ -85,7 +85,7 @@ intervalos, `max` deve ser maior ou igual a `min`. Fontes de consulta incluem
 `google`, `wikipedia`, `wikirandom`, `hackernews`, `reddit` e feeds RSS
 configurados. As consultas vêm dessas fontes externas; se nenhuma responder, a
 execução de busca é ignorada, sem lista local de reserva. Os valores padrão estão em
-[`src/constants/appConfig.json`](../src/constants/appConfig.json).
+[`src/constants/runtimeConstants.ts`](../src/constants/runtimeConstants.ts).
 
 O padrão distribuído define `headless` como `true`. Use o modo gráfico no workspace quando precisar acompanhar a janela do navegador.
 

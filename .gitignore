@@ -2,3 +2,4 @@ node_modules/
 dist/
 .env
 workspace/
+scripts/bootstrapper/payload/

@@ -1,6 +1,6 @@
-import asciiArt from '../constants/asciiArt.json'
+import { ASCII_ART } from '../constants/runtimeConstants'
 
-export const DASHBOARD_ART = asciiArt.join('\n')
+export const DASHBOARD_ART = ASCII_ART.join('\n')
 
 export interface DashboardLayoutState {
     mode: 'demo' | 'live' | 'app'
@@ -24,7 +24,9 @@ function fit(text: unknown, width: number): string {
 
 function wrap(text: unknown, width: number): string[] {
     const lines: string[] = []
-    const paragraphs = String(text ?? '').replace(/\r/g, '').split('\n')
+    const paragraphs = String(text ?? '')
+        .replace(/\r/g, '')
+        .split('\n')
 
     for (const paragraph of paragraphs) {
         const words = paragraph.trim().split(/\s+/).filter(Boolean)
@@ -98,9 +100,10 @@ export function renderDashboard(state: DashboardLayoutState, width = 80, color =
         return lines.join('\n')
     }
 
-    const currentAccount = state.mode === 'demo' && !state.currentAccount
-        ? 'Waiting for account activity'
-        : maskEmail(state.currentAccount)
+    const currentAccount =
+        state.mode === 'demo' && !state.currentAccount
+            ? 'Waiting for account activity'
+            : maskEmail(state.currentAccount)
     const lines = [
         ...art.split('\n'),
         '',

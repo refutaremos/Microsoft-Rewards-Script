@@ -3,8 +3,11 @@ import path from 'node:path'
 import readline from 'node:readline/promises'
 import { stdin as input, stdout as output } from 'node:process'
 
-const asciiArtPath = path.resolve('src', 'constants', 'asciiArt.json')
-const BANNER = `${JSON.parse(fs.readFileSync(asciiArtPath, 'utf8')).join('\n')}\n`
+const runtimeConstants = process.env.MRS_RUNTIME_CONSTANTS
+    ? JSON.parse(process.env.MRS_RUNTIME_CONSTANTS)
+    : await import('../src/constants/runtimeConstants.ts')
+const BANNER = `${runtimeConstants.ASCII_ART.join('\n')}\n`
+let activeInterface
 
 function validEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -21,14 +24,13 @@ function workspaceFileName(filename) {
 }
 
 function readUserConfigDefault() {
-    const appConfigPath = path.resolve('src', 'constants', 'appConfig.json')
-    const appConfig = JSON.parse(fs.readFileSync(appConfigPath, 'utf8'))
-    return { webhook: appConfig.webhook }
+    return { webhook: runtimeConstants.APP_CONFIG.webhook }
 }
 
 function readAccounts(filePath) {
     if (!fs.existsSync(filePath)) return []
-    return fs.readFileSync(filePath, 'utf8')
+    return fs
+        .readFileSync(filePath, 'utf8')
         .replace(/\r/g, '')
         .split(/\n\s*\n/)
         .map(block => block.trim())
@@ -45,11 +47,15 @@ function readAccounts(filePath) {
 }
 
 function writeAccounts(filePath, accounts) {
-    const text = accounts.map(account => [
-        `email: ${account.email}`,
-        `password: ${account.password}`,
-        ...(account.totpSecret ? [`totpSecret: ${account.totpSecret}`] : [])
-    ].join('\n')).join('\n\n')
+    const text = accounts
+        .map(account =>
+            [
+                `email: ${account.email}`,
+                `password: ${account.password}`,
+                ...(account.totpSecret ? [`totpSecret: ${account.totpSecret}`] : [])
+            ].join('\n')
+        )
+        .join('\n\n')
     fs.writeFileSync(filePath, text ? `${text}\n` : '', { mode: 0o600 })
     fs.chmodSync(filePath, 0o600)
 }
@@ -90,7 +96,10 @@ async function validateDiscordWebhook(url) {
     } catch {
         return false
     }
-    if (parsed.protocol !== 'https:' || !['discord.com', 'discordapp.com', 'canary.discord.com'].includes(parsed.hostname)) {
+    if (
+        parsed.protocol !== 'https:' ||
+        !['discord.com', 'discordapp.com', 'canary.discord.com'].includes(parsed.hostname)
+    ) {
         return false
     }
 
@@ -167,6 +176,7 @@ async function main() {
     }
 
     const rl = readline.createInterface({ input, output })
+    activeInterface = rl
     const accounts = readAccounts(accountsPath)
 
     let config
@@ -262,6 +272,7 @@ async function main() {
     }
 
     rl.close()
+    activeInterface = undefined
     writeAccounts(accountsPath, accounts)
     fs.writeFileSync(configPath, `${JSON.stringify(config, null, 4)}\n`, { mode: 0o600 })
     fs.chmodSync(configPath, 0o600)
@@ -269,6 +280,12 @@ async function main() {
 }
 
 main().catch(error => {
+    activeInterface?.close()
+    activeInterface = undefined
+    if (error instanceof Error && ['Aborted with Ctrl+C', 'Setup cancelled'].includes(error.message)) {
+        process.exitCode = 130
+        return
+    }
     console.error(error instanceof Error ? error.message : String(error))
     process.exitCode = 1
 })

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import semver from 'semver'
 import ms, { StringValue } from 'ms'
 import pkg from '../../package.json'
-import appConfigJson from '../constants/appConfig.json'
+import { APP_CONFIG } from '../constants/runtimeConstants'
 
 import { Config } from '../interface/Config'
 import { Account } from '../interface/Account'
@@ -202,7 +202,7 @@ export const AccountSchema = z.object({
 })
 
 const defaultConfig = ConfigSchema.parse({
-    ...appConfigJson,
+    ...APP_CONFIG,
     diagnosticsPassword: 'runtime-generated'
 })
 

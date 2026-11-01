@@ -221,8 +221,7 @@ export async function diffConfig(projectRoot, { validatorModule } = {}) {
     const mod = await loadConfigSync(projectRoot, validatorModule)
     if (!mod) throw new Error('ConfigSync module not found - run `npm run build`.')
     const { data: config } = readConfig(projectRoot)
-    const exampleFile = mod.readJson(mod.resolveExamplePath(projectRoot))
-    const example = mod.getUserConfigTemplate(exampleFile)
+    const example = mod.getDefaultUserConfig()
     return { addedKeys: mod.diffKeyPaths(config, example) }
 }
 
@@ -230,8 +229,7 @@ export async function syncMissingDefaults(projectRoot, { validatorModule } = {})
     const mod = await loadConfigSync(projectRoot, validatorModule)
     if (!mod) throw new Error('ConfigSync module not found - run `npm run build`.')
     const { data: config } = readConfig(projectRoot)
-    const exampleFile = mod.readJson(mod.resolveExamplePath(projectRoot))
-    const example = mod.getUserConfigTemplate(exampleFile)
+    const example = mod.getDefaultUserConfig()
     const { merged, addedKeys } = mod.mergeMissingDefaults(config, example)
     if (addedKeys.length > 0) {
         writeConfigAtomic(projectRoot, merged)

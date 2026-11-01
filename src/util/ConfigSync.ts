@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { APP_CONFIG } from '../constants/runtimeConstants'
 
 export interface SyncReport {
     configPath: string
@@ -25,15 +26,7 @@ export function resolveConfigPath(projectRoot: string = getProjectRoot()): strin
 }
 
 export function resolveExamplePath(projectRoot: string = getProjectRoot()): string {
-    const candidates = [
-        path.join(projectRoot, 'dist', 'constants', 'appConfig.json'),
-        path.join(projectRoot, 'src', 'constants', 'appConfig.json')
-    ]
-    const resolved = candidates.find(filePath => fs.existsSync(filePath))
-    if (!resolved) {
-        throw new Error('Built-in configuration defaults not found. Run `npm run build` before syncing configuration.')
-    }
-    return resolved
+    return path.join(projectRoot, 'src', 'constants', 'runtimeConstants.ts')
 }
 
 export function readJson(filePath: string): unknown {
@@ -45,6 +38,10 @@ export function getUserConfigTemplate(appConfig: unknown): unknown {
         return {}
     }
     return { webhook: appConfig.webhook }
+}
+
+export function getDefaultUserConfig(): unknown {
+    return getUserConfigTemplate(APP_CONFIG)
 }
 
 export function writeConfigAtomic(
@@ -125,10 +122,12 @@ export function syncConfig(opts: SyncOptions = {}): SyncReport {
     const examplePath = opts.examplePath ?? resolveExamplePath(projectRoot)
 
     fs.mkdirSync(path.dirname(configPath), { recursive: true })
-    const exampleFile = fs.existsSync(examplePath) ? readJson(examplePath) : { webhook: {} }
-    const example = examplePath.endsWith('appConfig.json')
-        ? getUserConfigTemplate(exampleFile)
-        : exampleFile
+    const exampleFile = opts.examplePath ? readJson(examplePath) : APP_CONFIG
+    const example = opts.examplePath
+        ? examplePath.endsWith('appConfig.json')
+            ? getUserConfigTemplate(exampleFile)
+            : exampleFile
+        : getUserConfigTemplate(exampleFile)
 
     // No config.json (or an empty stub) yet -> seed it from the example.
     if (!fs.existsSync(configPath) || fs.statSync(configPath).size < 10) {
